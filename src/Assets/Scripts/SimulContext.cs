@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using static Scene;
+using static PrintType;
 
 interface ISimulContext
 {
@@ -16,6 +17,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
     // Start is called before the first frame update
     public Text notifText;
     public Text inventoryListText;
+    public UnityPrint printable;
     void Awake()
     {
         //Debug.Log("Awake Method");
@@ -41,9 +43,9 @@ public class SimulContext : MonoBehaviour, ISimulContext
         }
         _isRunning = true;
         _objInventory = new List<string>();
-        UnityPrint up = new UnityPrint();
-        up.notifText = this.notifText;
-        _s.setPrintOutput(up);
+        //printable = new UnityPrint();
+        //printable.notifText = this.notifText;
+        _s.setPrintOutput(printable);
         //s.addTakeObjectUnorderedTask("123");
         _s.FirstTry();
         _isRunning = false;
@@ -56,7 +58,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
             _s.TakeObject(name);
             _objInventory.Add(name);
             GameObject.Find(name).SetActive(false);
-            PrintNotif(name + " pris !");
+            printable.PrintToUser(name + " pris !",PrintType.WITH_TIMEOUT,3);
             inventoryListText.text += name + "\n";
         }
     }
@@ -65,11 +67,12 @@ public class SimulContext : MonoBehaviour, ISimulContext
     {
         _s = FileTools.LoadTextFile(file);
         _s.SimulContext = this;
-        if(_isRunning) 
-        {
-            _s.setPrintOutput(new UnityPrint());
-            _s.FirstTry();
-        }
+        _objInventory = new List<string>();
+        //printable = new UnityPrint();
+        //printable.notifText = this.notifText;
+        _s.setPrintOutput(printable);
+        //s.addTakeObjectUnorderedTask("123");
+        _s.FirstTry();
         return true;
     }
 
@@ -83,6 +86,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
         return _s.CheckTasks();
     }
 
+    //DO NOT USE (Use the printable attribute instead)
     public void PrintNotif(string text)
     {
         notifText.text = text;

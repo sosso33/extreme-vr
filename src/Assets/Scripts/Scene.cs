@@ -226,41 +226,43 @@ class Scene
     public void CheckBox(string message, List<string> options, Dictionary<List<int>,List<Instruction>> inst, bool isStrict = false)
     {
         List<int> input;
-        Debug.Log("CHKBOX");
         input = PrintOutput.CheckboxToUser(message, options);
-        Console.Write("INPUT => ");
-        foreach(int i in input) Console.Write(i+",");
-        Console.Write("\n");
+        bool goToElse = true;
+        List<int> elseKey = null;
+
         foreach (KeyValuePair<List<int>,List<Instruction>> kv in inst)
         {
-            Debug.Log("FOREACH/ ISSTRICT = " + isStrict);
             if(isStrict)
             {
-                Console.Write("KEY ");
-                foreach(int k in kv.Key) Console.Write(k + ",");
-                Console.Write(" VALUE ");
-                foreach(Instruction v in kv.Value) Debug.Log("foreach " + v==null);//Console.Write(v.Type + ",");
-                Console.Write("\n");
-                Debug.Log("input == null ? " + input==null + ";kv == null ?" + kv==null);
                 if(Enumerable.SequenceEqual(input.OrderBy(e => e), kv.Key.OrderBy(e => e)))
                 {
-                    Debug.Log("EQUAL");
+                    goToElse = false;
                     foreach (Instruction i in kv.Value)
                     {
-                        Debug.Log("execute");
                         i.Execute(this);
                     }
                 }
+                else if(kv.Key.Contains(CheckBoxInstr.DEFAULT_CASE)) elseKey = kv.Key;
             }
             else
             {
                 if(kv.Key.Intersect(input).ToList().Count == input.Count)
                 {
+                    goToElse = false;
                     foreach (Instruction i in kv.Value)
                     {
                         i.Execute(this);
                     }
                 }
+                else if(kv.Key.Contains(CheckBoxInstr.DEFAULT_CASE)) elseKey = kv.Key;
+            }
+        }
+
+        if(goToElse && elseKey != null)
+        {
+            foreach(Instruction i in inst[elseKey])
+            {
+                i.Execute(this);
             }
         }
     }

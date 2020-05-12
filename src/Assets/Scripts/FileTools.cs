@@ -53,6 +53,7 @@ class FileTools
         return _scene;
     }
 
+
     private static void _read_line(string line)
     {
         int tmp;
@@ -68,13 +69,13 @@ class FileTools
 
         if(_currentTabNumber > tmp)
         {
-            //Debug.Log("/// BLOCK END");
+            //Console.WriteLine("/// BLOCK END");
             _currentTabNumber = tmp;
             _state.Pop();
         }
         /*if(_currentTabNumber < tmp)
         {
-            Debug.Log("/// BLOCK START");
+            Console.WriteLine("/// BLOCK START");
             _currentTabNumber = tmp;
         }*/
         splitLine = line.Split(' ');
@@ -113,7 +114,7 @@ class FileTools
                 }
                 break;
             default:
-                //Debug.Log("error");
+                //Console.WriteLine("error");
                 _printDebug("Incorrect params \"" + String.Join(" ",peekLine) + "\"",_lineNumber,'e');
                 return;
                 //_state.Pop();
@@ -184,8 +185,9 @@ class FileTools
 
     private static Instruction _read_instruction(string line)
     {
+        line = line.Trim();
         string []splitLine = line.Split(' ');
-        //Debug.Log("read inst");
+        //Console.WriteLine("read inst");
         if(splitLine[0] == "print")
         {
             string printLine;
@@ -194,22 +196,22 @@ class FileTools
             double time;
             //Regex searchTerm = new Regex("\"([^\"\\\\]*(\\\\.)*)*\"");
             //Match mc = searchTerm.Match(line);
-            //Debug.Log(line);
+            //Console.WriteLine(line);
             foreach (Match match in Regex.Matches(line, "\"([^\"]*)\"\\s+(\\w+\\s*)\\s+(\\w+)"))
             {
                 //string result = match.Result("$2");
-                //Debug.Log(match.Result("$1") + "////");
-                //Debug.Log(match.Result("$2") + "////");
-                //Debug.Log(match.Result("$3") + "////");
+                //Console.WriteLine(match.Result("$1") + "////");
+                //Console.WriteLine(match.Result("$2") + "////");
+                //Console.WriteLine(match.Result("$3") + "////");
                 text = match.Result("$1");
                 if(match.Result("$2") == "for")
                 {
                     timeString = match.Result("$3");
-                    //Debug.Log(timeString);
+                    //Console.WriteLine(timeString);
                     if(timeString[timeString.Length - 1] == 's') timeString = timeString.Substring(0,timeString.Length - 1);
-                    //Debug.Log(timeString);
+                    //Console.WriteLine(timeString);
                     time = Double.Parse(timeString);
-                    //Debug.Log(text);
+                    //Console.WriteLine(text);
                     return new PrintInst(text,PrintType.WITH_TIMEOUT,time);
                 }
                 if(match.Result("$2") == "with")
@@ -227,6 +229,8 @@ class FileTools
         {
             return _read_checkbox(line);
         }
+        //Console.WriteLine("WARNING!!!!!! NULL INSTRUCTION !!!!!!");
+        _printDebug("Null instruction from line \"" + line + "\"",_lineNumber,'w');
         return null;
     }
     
@@ -240,6 +244,11 @@ class FileTools
         List<string> options = new List<string>();
         Dictionary<List<int>,List<Instruction>> inst = new Dictionary<List<int>, List<Instruction>>();
         CheckBoxInstr checkBox;
+        List<int> caseL;
+        List<Instruction> caseInst;
+        Instruction tmp;
+        int caseNb;
+
 
         if(splitLine[i] == "strict")
         {
@@ -249,12 +258,12 @@ class FileTools
         else isStrict = false;
 
         line = String.Join(" ",splitLine,i,splitLine.Length - i);
-        //Debug.Log("read checkbox => " + line);
+        //Console.WriteLine("read checkbox => " + line);
         MatchCollection mc = Regex.Matches(line, "\"([^\"]*)\"");
         message = mc[0].Result("$1");
         for (i = 1; i< mc.Count; i++)
         {
-            //Debug.Log(mc[i].Result("$1"));
+            //Console.WriteLine(mc[i].Result("$1"));
             options.Add(mc[i].Result("$1"));
         }
         line = _read_file();
@@ -272,35 +281,53 @@ class FileTools
             {
                 case "case":
                     string []args = splitLine[1].Split(',');
-                    List<int> caseL = new List<int>();
-                    List<Instruction> caseInst = new List<Instruction>();
-                    int caseNb;
+                    caseL = new List<int>();
+                    caseInst = new List<Instruction>();
                     foreach(string st in args)
                     {
-                        if(st == "else:")
-                        {
-                            caseL.Add(CheckBoxInstr.DEFAULT_CASE);
-                            continue;
-                        }
-                        if(int.TryParse(st[st.Length - 1] == ':' ? st.Substring(0,st.Length - 2) : st,out caseNb))
-                            caseL.Add(caseNb);
+                        if(int.TryParse((st[st.Length - 1] == ':') ? st.Substring(0,st.Length - 1) : st,out caseNb))
+                            caseL.Add(caseNb - 1);
                     }
                     newTabs = _currentTabNumber;
                     line = _read_file();
                     _currentTabNumber = _get_tab_number(line);
                     while(_currentTabNumber > newTabs)
                     {
-                        caseInst.Add(_read_instruction(line));
+                        tmp = _read_instruction(line);
+                        if(tmp != null) caseInst.Add(tmp);
                         line = _read_file();
                         _currentTabNumber = _get_tab_number(line);
+                        line = line.Trim();
                     }
                     inst[caseL] = caseInst;
                     break;
                 case "else:":
+                    caseL = new List<int>();
+                    caseInst = new List<Instruction>();
+
+                    caseL.Add(CheckBoxInstr.DEFAULT_CASE);
+                    newTabs = _currentTabNumber;
+                    line = _read_file();
+                    _currentTabNumber = _get_tab_number(line);
+                    while(_currentTabNumber > newTabs)
+                    {
+                        tmp = _read_instruction(line);
+                        if(tmp != null) caseInst.Add(tmp);
+                        line = _read_file();
+                        _currentTabNumber = _get_tab_number(line);
+                        line = line.Trim();
+                    }
+                    inst[caseL] = caseInst;
+
+                    line = _read_file();
+                    _currentTabNumber = _get_tab_number(line);
                     break;
                 default:
+                    line = _read_file();
+                    _currentTabNumber = _get_tab_number(line);
                     break;
-            }            
+            }
+            splitLine = line.Split(' ');
         }
         return new CheckBoxInstr(message,options,inst,isStrict);
     }
@@ -309,16 +336,16 @@ class FileTools
     {
         if(type == 'e') 
         {
-            Console.ForegroundColor = ConsoleColor.Red; 
+            //Console.ForegroundColor = ConsoleColor.Red; 
             Debug.Log("Error at line " + lineNumber + " : " + mess);
-            Console.ResetColor();
-            Environment.Exit(1);
+            //Console.ResetColor();
+            //Environment.Exit(1);
         }
         if(type == 'w')
         {
-            Console.ForegroundColor = ConsoleColor.Magenta; 
+            //Console.ForegroundColor = ConsoleColor.Magenta; 
             Debug.Log("Warning at line " + lineNumber + " : " + mess);
-            Console.ResetColor();
+            //Console.ResetColor();
         }
     }
 

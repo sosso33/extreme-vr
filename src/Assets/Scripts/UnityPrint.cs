@@ -9,12 +9,35 @@ using static IPrintable;
 public class UnityPrint : MonoBehaviour, IPrintable
 {
     public Text notifText;
+    public Text confirmationText;
+    public double remainingTime;
+    private bool isWaitingText = false;
+
+    public void Update()
+    {
+        if(isWaitingText)
+        {
+            if((remainingTime-=Time.deltaTime) < 0)
+            {
+                notifText.text = "";
+                isWaitingText = false;
+            }
+        }
+        if(confirmationText.text != null)
+            if(confirmationText.text != "")
+            {
+                if(Input.GetButton("Submit"))
+                {
+                    confirmationText.text = "";
+                }
+            }
+    }
     public void PrintToUser(String text, int type, double time = -1)
     {
         if((type & PrintType.WITH_CONFIRMATION) == PrintType.WITH_CONFIRMATION)
         {
             Debug.Log(text + "\nPress Enter to continue");
-            if(notifText != null) notifText.text = text + "\nPress Enter to continue";
+            if(notifText != null) confirmationText.text = text + "\nPress Enter to continue";
             else Debug.Log("NotifText = null !");
             //Console.ReadKey();
             Debug.Log("Confirmation");
@@ -22,10 +45,15 @@ public class UnityPrint : MonoBehaviour, IPrintable
         else if((type & PrintType.WITH_TIMEOUT) == PrintType.WITH_TIMEOUT)
         {
             Debug.Log(text);
-            if(notifText != null) notifText.text = text;
+            if(notifText != null) 
+            {
+                notifText.text = text;
+                remainingTime = time;
+                isWaitingText = true;
+            }
             else Debug.Log("NotifText = null !");
             //Thread.Sleep((int)time * 1000);
-            Debug.Log("Wait");
+            Debug.Log("Wait for " + remainingTime);
         }
         else Debug.Log("PrintToUser : Unknown type");
     }
@@ -53,7 +81,8 @@ public class UnityPrint : MonoBehaviour, IPrintable
         }
         return chList;
     */
-    return null;
+        Debug.Log("CHECKBOX NOT IMPLEMENTED YET (WILL RETURN NULL)");
+        return null;
     }
     
 }
