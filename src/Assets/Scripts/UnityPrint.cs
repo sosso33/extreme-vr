@@ -12,6 +12,7 @@ public class UnityPrint : MonoBehaviour, IPrintable
     public Text confirmationText;
     public double remainingTime;
     private bool isWaitingText = false;
+    public SimulContext simul;
 
     public void Update()
     {
@@ -21,17 +22,20 @@ public class UnityPrint : MonoBehaviour, IPrintable
             {
                 notifText.text = "";
                 isWaitingText = false;
+                simul.SignalUserInput();
             }
         }
-        if(confirmationText.text != null)
+        else if(confirmationText.text != null)
             if(confirmationText.text != "")
             {
-                if(Input.GetButton("Submit"))
+                if(Input.GetButtonDown("Submit"))
                 {
                     confirmationText.text = "";
+                    simul.SignalUserInput();
                 }
             }
     }
+    
     public void PrintToUser(String text, int type, double time = -1)
     {
         if((type & PrintType.WITH_CONFIRMATION) == PrintType.WITH_CONFIRMATION)

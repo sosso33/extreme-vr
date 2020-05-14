@@ -229,6 +229,20 @@ class FileTools
         {
             return _read_checkbox(line);
         }
+        else if(splitLine[0] == "freeze")
+        {
+            if(splitLine[1] == "user")
+            {
+                return new FreezeUserInst(true);
+            }
+        }
+        else if(splitLine[0] == "unfreeze")
+        {
+            if(splitLine[1] == "user")
+            {
+                return new FreezeUserInst(false);
+            }
+        }
         //Console.WriteLine("WARNING!!!!!! NULL INSTRUCTION !!!!!!");
         _printDebug("Null instruction from line \"" + line + "\"",_lineNumber,'w');
         return null;

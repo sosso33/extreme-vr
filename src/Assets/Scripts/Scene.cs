@@ -3,6 +3,7 @@ using System.Linq;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Threading;
 
 class Scene
 {
@@ -62,6 +63,9 @@ class Scene
     public IPrintable PrintOutput { get { return _printOutput; } }
     private ISimulContext _simulContext;
     public ISimulContext SimulContext { get { return _simulContext; } set { _simulContext = value; }}
+    private object _instLock;
+
+    private Boolean _isUserInput;
 
     public Scene()
     {
@@ -72,7 +76,9 @@ class Scene
         _firstTryInst = new List<Instruction>();
         _atStartInst = new List<Instruction>();
         _objInventory = new List<String>();
+        _isUserInput = false;
         WaitForValidation = false;
+        _instLock = new object();
     }
     
     public void setPrintOutput(IPrintable p)
@@ -85,14 +91,48 @@ class Scene
         if(i != null) _firstTryInst.Add(i);
     }
 
-    public void FirstTry()
+    public IEnumerator<WaitUntil> FirstTry()
     {
-        foreach (Instruction i in _firstTryInst) i.Execute(this);
+        lock(_instLock)
+        {
+            foreach (Instruction i in _firstTryInst) 
+            {
+                Debug.Log("INST");
+                i.Execute(this);
+                //if((_printType & PrintType.WITH_CONFIRMATION) == PrintType.WITH_CONFIRMATION)
+                if(i.Type == Instruction.PRINT_INST)
+                {
+                        Debug.Log("BLAA");
+                        yield return new WaitUntil(() => _isUserInput);
+                        _isUserInput = false;
+                        Debug.Log("BLAA END");
+                }
+                else if(i.Type == Instruction.LOAD_INST) break;
+                Debug.Log("INST END");
+            }
+            Debug.Log("LOOP END");
+            yield break;
+        }
+        yield break;
     }
 
-    public void AtStart()
+    public IEnumerator<WaitUntil> AtStart()
     {
-        foreach(Instruction i in _atStartInst) i.Execute(this);
+        lock(_instLock)
+        {
+            foreach (Instruction i in _atStartInst) 
+            {
+                i.Execute(this);
+                //if((_printType & PrintType.WITH_CONFIRMATION) == PrintType.WITH_CONFIRMATION)
+                if(i.Type == Instruction.PRINT_INST)
+                {
+                        yield return new WaitUntil(() => _isUserInput);
+                        _isUserInput = false;
+                }
+                else if(i.Type == Instruction.LOAD_INST) break;
+            }
+        }
+        yield break;
     }
 
     public void Restart()
@@ -264,6 +304,27 @@ class Scene
             {
                 i.Execute(this);
             }
+        }
+    }
+
+    public void SetUserFreeze(bool isFrozen)
+    {
+        SimulContext.SetUserFreeze(isFrozen);
+    }
+
+    public void WaitForUserInput()
+    {
+        //StartCoroutine(_waitCo());
+        //while(!_isUserInput) {Debug.Log("WAITING");}
+        _isUserInput = false;
+    }
+
+    public void SignalUserInput()
+    {
+        //_userInputWaitHandle.Set();
+        lock(_instLock)
+        {
+            _isUserInput = true;
         }
     }
 }

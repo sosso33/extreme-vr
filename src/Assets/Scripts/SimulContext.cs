@@ -10,6 +10,7 @@ interface ISimulContext
 {
     bool LoadScene(string file);
     bool RestartScene();
+    void SetUserFreeze(bool isFrozen);
 }
 
 public class SimulContext : MonoBehaviour, ISimulContext
@@ -18,11 +19,12 @@ public class SimulContext : MonoBehaviour, ISimulContext
     public Text notifText;
     public Text inventoryListText;
     public UnityPrint printable;
+    public CameraMove camera;
     void Awake()
     {
         //Debug.Log("Awake Method");
         LoadScene("scene01a");
-        Run();
+        //Run();
     }
 
     // Update is called once per frame
@@ -47,7 +49,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
         //printable.notifText = this.notifText;
         _s.setPrintOutput(printable);
         //s.addTakeObjectUnorderedTask("123");
-        _s.FirstTry();
+        StartCoroutine(_s.FirstTry());
         _isRunning = false;
     }
 
@@ -72,12 +74,14 @@ public class SimulContext : MonoBehaviour, ISimulContext
         //printable.notifText = this.notifText;
         _s.setPrintOutput(printable);
         //s.addTakeObjectUnorderedTask("123");
-        _s.FirstTry();
+        StartCoroutine(_s.FirstTry());
         return true;
     }
 
     public bool RestartScene()
     {
+        _objInventory.Clear();
+        inventoryListText.text = "";
         return false;
     }
 
@@ -90,5 +94,15 @@ public class SimulContext : MonoBehaviour, ISimulContext
     public void PrintNotif(string text)
     {
         notifText.text = text;
+    }
+
+    public void SetUserFreeze(bool isFrozen)
+    {
+        camera.IsFrozen = isFrozen;
+    }
+
+    public void SignalUserInput()
+    {
+        _s.SignalUserInput();
     }
 }

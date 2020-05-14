@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using static IPrintable;
+using UnityEngine;
+using UnityEngine.UI;
 
 abstract class Instruction
 {
-    public const int INST_PRINT = 1;
+    public const int PRINT_INST = 1;
     public const int LOAD_INST = 2;
     public const int FREEZE_USER_INST = 3;
     public const int UNFREEZE_USER_INST = 4;
@@ -24,7 +28,7 @@ class PrintInst : Instruction
     private double _time;
     public PrintInst(String text, int type, double time = -1)
     {
-        _type = Instruction.INST_PRINT;
+        _type = Instruction.PRINT_INST;
         _text = text;
         _printType = type;
         _time = time;
@@ -85,5 +89,21 @@ class CheckBoxInstr : Instruction
     public override void Execute(Scene s)
     {
         s.CheckBox(_message,_options,_inst,_isStrict);
+    }
+}
+
+class FreezeUserInst : Instruction
+{
+    private bool _isFrozen;
+
+    public FreezeUserInst(bool isFrozen)
+    {
+        _type = FREEZE_USER_INST;
+        _isFrozen = isFrozen;
+    }
+
+    public override void Execute(Scene s)
+    {
+        s.SetUserFreeze(_isFrozen);
     }
 }

@@ -8,7 +8,9 @@ define:
     $dosimetrePassif = DosiMPassif
 
 when firsttry:
+    #freeze user
     print "Liste complète de vêtement : ..." with confirmation
+    #unfreeze user
 
 tasks without order:
     take $tshirt
@@ -19,11 +21,11 @@ tasks without order:
     wait for validation
 
 when success:
-    freeze user
+    #freeze user
     print "Choix d'équipement correcte !" for 3s
     load scene01b
 
 when fail:
-    freeze user
+    #freeze user
     print "Choix d'équipement incorrecte !" for 3s
-    restart
+    #restart
