@@ -13,6 +13,7 @@ when firsttry:
     #unfreeze user
 
 tasks without order:
+    strict take
     take $tshirt
     take $tenueCirculation
     take $chaussuresTravail

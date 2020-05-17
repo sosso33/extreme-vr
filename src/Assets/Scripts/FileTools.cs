@@ -160,6 +160,14 @@ class FileTools
                     }
                 }
                 break;
+            case "strict":
+            {
+                if(tmp[1] == "take")
+                {
+                    _scene.IsTakeObjectStrict = true;
+                }
+                break;
+            }
         }
 
         return 0;

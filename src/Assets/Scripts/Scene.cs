@@ -58,6 +58,9 @@ class Scene
     private List<Instruction> _atStartInst;
     private IPrintable _printOutput;
     private List<String> _objInventory;
+    private bool _isTakeObjectStrict = false;
+
+    public bool IsTakeObjectStrict { get{ return _isTakeObjectStrict;} set{ _isTakeObjectStrict = value;}}
     private bool _waitForValidation;
     public bool WaitForValidation {get {return _waitForValidation;} set {_waitForValidation = value;}}
     public IPrintable PrintOutput { get { return _printOutput; } }
@@ -178,7 +181,7 @@ class Scene
                 returnValue = true;
             }
         }
-        _objInventory.Add(objID);
+        if(!_objInventory.Contains(objID)) _objInventory.Add(objID);
 
         if(!WaitForValidation) CheckTasks();
         //Enlever l'objet de l'environnement
@@ -208,6 +211,7 @@ class Scene
 
     public Boolean CheckTasks()
     {
+        List<String> obj = new List<String>(_objInventory);
         foreach(Task t in _unorderedTasks)
         {
             if(!t.isTaskDone())
@@ -215,11 +219,30 @@ class Scene
                 fail();
                 return false;
             }
+            if(t.getType() == Task.TASK_TAKE)
+            {
+                Debug.Log("Take " + t.getArgs()[0]);
+                obj.Remove(t.getArgs()[0]);
+            }
         }
 
         foreach(Task t in _orderedTasks)
         {
             if(!t.isTaskDone())
+            {
+                fail();
+                return false;
+            }
+            if(t.getType() == Task.TASK_TAKE)
+            {
+                Debug.Log("Take " + t.getArgs()[0]);
+                obj.Remove(t.getArgs()[0]);
+            }
+        }
+
+        if(IsTakeObjectStrict)
+        {
+            if(obj.Count > 0)
             {
                 fail();
                 return false;
