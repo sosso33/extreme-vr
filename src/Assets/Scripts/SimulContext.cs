@@ -65,6 +65,11 @@ public class SimulContext : MonoBehaviour, ISimulContext
         }
     }
 
+    public Behaviour GetHaloComponent(String name)
+    {
+        return (Behaviour)GameObject.Find(name).GetComponent("Halo");
+    }
+
     public bool LoadScene(string file)
     {
         _s = FileTools.LoadTextFile(file);
