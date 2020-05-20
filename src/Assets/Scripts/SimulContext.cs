@@ -22,6 +22,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
     public UnityPrint printable;
     public DropObjectsManager Dom;
     public CameraMove camera;
+    private Boolean _objectdropped = false;
     private Dictionary<String,GameObject> _inactiveObjects;
     void Awake()
     {
@@ -34,6 +35,11 @@ public class SimulContext : MonoBehaviour, ISimulContext
     void Update()
     {
         WaitCtrlPress();
+        if(_objectdropped == true)
+        {
+            UpdateInventoryListText();
+            _objectdropped = false;
+        }
 
     }
 
@@ -59,8 +65,10 @@ public class SimulContext : MonoBehaviour, ISimulContext
 
     public void TakeObj(string name)
     {
+        UnityEngine.Debug.Log("ça passe takeobj");
         if(!_objInventory.Contains(name))
         {
+            UnityEngine.Debug.Log("ça passe le if");
             _s.TakeObject(name);
             _objInventory.Add(name);
             _inactiveObjects.Add(name,GameObject.Find(name));
@@ -80,18 +88,21 @@ public class SimulContext : MonoBehaviour, ISimulContext
             _s.DropObject(name);
             UnityEngine.Debug.Log(name);
             _objInventory.Remove(name);
-            //GameObject.Find(name).SetActive(true);
-            _inactiveObjects[name].SetActive(true);
+           //GameObject.Find(name).SetActive(true);
+           _inactiveObjects[name].SetActive(true);
+            _inactiveObjects.Remove(name);
             printable.PrintToUser(name + " enlevé !", PrintType.WITH_TIMEOUT, 3);
+            _objectdropped = true;
         }
     }
 
     public void UpdateInventoryListText()
     {
+        inventoryListText.text = "";
         foreach(String name in _objInventory)
         {
             inventoryListText.text += name + "\n";
-        }
+        } 
     }
 
     public void WaitCtrlPress()
