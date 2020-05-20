@@ -17,6 +17,8 @@ interface ISimulContext
 public class SimulContext : MonoBehaviour, ISimulContext
 {
     // Start is called before the first frame update
+    AudioSource _audiosource;
+    public AudioClip _loot;
     public Text notifText;
     public Text inventoryListText;
     public UnityPrint printable;
@@ -29,6 +31,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
         //Debug.Log("Awake Method");
         LoadScene("scene01a");
         //Run();
+        _audiosource = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -68,6 +71,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
         UnityEngine.Debug.Log("ça passe takeobj");
         if(!_objInventory.Contains(name))
         {
+            _audiosource.PlayOneShot(_loot, 0.7F);
             UnityEngine.Debug.Log("ça passe le if");
             _s.TakeObject(name);
             _objInventory.Add(name);
