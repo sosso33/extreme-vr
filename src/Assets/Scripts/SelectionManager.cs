@@ -39,7 +39,7 @@ public class SelectionManager : MonoBehaviour
         if(Physics.Raycast(ray, out hit,100000))
         {
             string name = hit.collider.gameObject.name;
-            Debug.Log("SELECTION MANAGER : object detected (" + name + ")");
+            Debug.Log("SELECTION MANAGER : object selected (" + name + ")");
             simc.TakeObj(name);
         }
         else Debug.Log("SELECTION MANAGER : nothing selected");

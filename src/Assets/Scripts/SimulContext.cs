@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using static Scene;
 using static PrintType;
 
+
 interface ISimulContext
 {
     bool LoadScene(string file);
@@ -19,6 +20,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
     public Text notifText;
     public Text inventoryListText;
     public UnityPrint printable;
+    public DropObjectsManager Dom;
     public CameraMove camera;
     void Awake()
     {
@@ -30,7 +32,8 @@ public class SimulContext : MonoBehaviour, ISimulContext
     // Update is called once per frame
     void Update()
     {
-        
+        WaitCtrlPress();
+
     }
 
     private Scene _s = null;
@@ -62,6 +65,50 @@ public class SimulContext : MonoBehaviour, ISimulContext
             GameObject.Find(name).SetActive(false);
             printable.PrintToUser(name + " pris !",PrintType.WITH_TIMEOUT,3);
             inventoryListText.text += name + "\n";
+            Dom.CreateNewObject(name);
+        }
+    }
+
+    public void DropObj(string name)
+    {
+        UnityEngine.Debug.Log("On entre dans la fct drop simc");
+        if (_objInventory.Contains(name))
+        {
+            UnityEngine.Debug.Log("nom: " + name);
+            _s.DropObject(name);
+            UnityEngine.Debug.Log(name);
+            _objInventory.Remove(name);
+            GameObject.Find(name).SetActive(true);
+            printable.PrintToUser(name + " enlevé !", PrintType.WITH_TIMEOUT, 3);
+        }
+    }
+
+    public void UpdateInventoryListText()
+    {
+        foreach(String name in _objInventory)
+        {
+            inventoryListText.text += name + "\n";
+        }
+    }
+
+    public void WaitCtrlPress()
+    {
+        if (Input.GetButtonDown("Drop"))
+        {
+            UnityEngine.Debug.Log("Ctrl presse");
+            if (Dom.ctrlpressed == true)
+            {
+                Dom.UnPrint();
+                camera.IsFrozen = false;
+            }
+            else
+            {
+                Camera mycam = camera.GetComponent<Camera>();
+                Dom.cameraposition = mycam.ScreenToViewportPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, mycam.nearClipPlane));
+                camera.IsFrozen = true;
+                Dom.PrintDropList();
+            }
+            Dom.ctrlpressed = !Dom.ctrlpressed;
         }
     }
 

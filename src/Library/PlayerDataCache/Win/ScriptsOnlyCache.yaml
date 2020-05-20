@@ -2,6 +2,7 @@ ScriptsOnlyBuild:
   usedScripts:
     Assembly-CSharp.dll:
     - CameraMove
+    - DropObjectsManager
     - SelectionManager
     - SimulContext
     - UnityPrint
@@ -18,7 +19,6 @@ ScriptsOnlyBuild:
     - TMPro.TMP_Settings
     - TMPro.TMP_SpriteAsset
     - TMPro.TMP_StyleSheet
-    - TMPro.TextMeshProUGUI
     UnityEditor.TestRunner.dll:
     - UnityEditor.TestTools.TestRunner.Api.CallbacksHolder
     - UnityEditor.TestTools.TestRunner.TestListCacheData
@@ -66,35 +66,35 @@ ScriptsOnlyBuild:
     - Class: 109
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 11268}
+      Script: {instanceID: 11214}
     - Class: 114
-      Script: {instanceID: 11328}
+      Script: {instanceID: 11274}
     - Class: 114
-      Script: {instanceID: 11476}
+      Script: {instanceID: 11422}
     - Class: 114
-      Script: {instanceID: 12038}
+      Script: {instanceID: 11984}
     - Class: 114
-      Script: {instanceID: 12072}
+      Script: {instanceID: 12018}
     - Class: 114
-      Script: {instanceID: 12300}
+      Script: {instanceID: 12246}
     - Class: 114
-      Script: {instanceID: 12452}
+      Script: {instanceID: 12398}
     - Class: 114
-      Script: {instanceID: 12820}
+      Script: {instanceID: 12766}
     - Class: 114
-      Script: {instanceID: 12838}
+      Script: {instanceID: 12784}
     - Class: 114
-      Script: {instanceID: 13060}
+      Script: {instanceID: 13088}
     - Class: 114
-      Script: {instanceID: 13140}
+      Script: {instanceID: 13290}
     - Class: 114
-      Script: {instanceID: 13342}
+      Script: {instanceID: 13556}
     - Class: 114
-      Script: {instanceID: 13608}
+      Script: {instanceID: 13574}
     - Class: 114
-      Script: {instanceID: 13626}
+      Script: {instanceID: 14178}
     - Class: 114
-      Script: {instanceID: 15528}
+      Script: {instanceID: 15398}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 122
@@ -422,7 +422,7 @@ ScriptsOnlyBuild:
     className: TMP_SpriteAnimator
   - hash:
       serializedVersion: 2
-      Hash: 74ad697ddc1d2e27e95a360de12c0935
+      Hash: bf9ebca98b5571762071f9e705776984
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: SimulContext
@@ -702,6 +702,12 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: PlayableTrack
+  - hash:
+      serializedVersion: 2
+      Hash: a2d4f8a2ac979089923687e6f4ed4b7c
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: DropObjectsManager
   platform: 5
   scenePathNames:
   - Assets/projet_v1.unity
