@@ -19,6 +19,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
     // Start is called before the first frame update
     AudioSource _audiosource;
     public AudioClip _loot;
+    public AudioClip _drop;
     public Text notifText;
     public Text inventoryListText;
     public UnityPrint printable;
@@ -71,7 +72,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
         UnityEngine.Debug.Log("ça passe takeobj");
         if(!_objInventory.Contains(name))
         {
-            _audiosource.PlayOneShot(_loot, 0.7F);
+            _audiosource.PlayOneShot(_loot, 0.5F);
             UnityEngine.Debug.Log("ça passe le if");
             _s.TakeObject(name);
             _objInventory.Add(name);
@@ -88,6 +89,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
         UnityEngine.Debug.Log("On entre dans la fct drop simc");
         if (_objInventory.Contains(name))
         {
+            _audiosource.PlayOneShot(_drop, 0.5F);
             UnityEngine.Debug.Log("nom: " + name);
             _s.DropObject(name);
             UnityEngine.Debug.Log(name);

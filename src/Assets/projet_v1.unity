@@ -531,6 +531,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _loot: {fileID: 8300000, guid: e95a88b4ebebbac42af04ae2407e26ef, type: 3}
+  _drop: {fileID: 8300000, guid: 403224a1ec49d134d9bee8a1f892099a, type: 3}
   notifText: {fileID: 1565837788}
   inventoryListText: {fileID: 278523258}
   printable: {fileID: 1838473211}
