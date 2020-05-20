@@ -22,6 +22,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
     public UnityPrint printable;
     public DropObjectsManager Dom;
     public CameraMove camera;
+    private Dictionary<String,GameObject> _inactiveObjects;
     void Awake()
     {
         //Debug.Log("Awake Method");
@@ -62,6 +63,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
         {
             _s.TakeObject(name);
             _objInventory.Add(name);
+            _inactiveObjects.Add(name,GameObject.Find(name));
             GameObject.Find(name).SetActive(false);
             printable.PrintToUser(name + " pris !",PrintType.WITH_TIMEOUT,3);
             inventoryListText.text += name + "\n";
@@ -78,7 +80,8 @@ public class SimulContext : MonoBehaviour, ISimulContext
             _s.DropObject(name);
             UnityEngine.Debug.Log(name);
             _objInventory.Remove(name);
-            GameObject.Find(name).SetActive(true);
+            //GameObject.Find(name).SetActive(true);
+            _inactiveObjects[name].SetActive(true);
             printable.PrintToUser(name + " enlevé !", PrintType.WITH_TIMEOUT, 3);
         }
     }
@@ -122,6 +125,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
         _s = FileTools.LoadTextFile(file);
         _s.SimulContext = this;
         _objInventory = new List<string>();
+        _inactiveObjects = new Dictionary<string, GameObject>();
         //printable = new UnityPrint();
         //printable.notifText = this.notifText;
         _s.setPrintOutput(printable);
