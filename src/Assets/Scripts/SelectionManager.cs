@@ -20,14 +20,17 @@ public class SelectionManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        HoverObject();
-        if (Input.GetMouseButtonDown(0))
+        if(!simc.IsSceneFunctionRunning)
         {
-            SelectObject();
-        }
-        if (Input.GetMouseButtonDown(1))
-        {
-            Validate();
+            HoverObject();
+            if (Input.GetMouseButtonDown(0))
+            {
+                SelectObject();
+            }
+            if (Input.GetMouseButtonDown(1))
+            {
+                Validate();
+            }
         }
     }
 
@@ -68,6 +71,7 @@ public class SelectionManager : MonoBehaviour
 
     void Validate()
     {
+        Debug.Log("Validate");
         simc.Validate();
     }
 }

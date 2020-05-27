@@ -27,6 +27,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
     public CameraMove camera;
     private Boolean _objectdropped = false;
     private Dictionary<String,GameObject> _inactiveObjects;
+    public bool IsSceneFunctionRunning { get { return _s.IsSceneFunctionRunning;}}
     void Awake()
     {
         //Debug.Log("Awake Method");
@@ -38,7 +39,7 @@ public class SimulContext : MonoBehaviour, ISimulContext
     // Update is called once per frame
     void Update()
     {
-        WaitCtrlPress();
+        if(!IsSceneFunctionRunning) WaitCtrlPress();
         if(_objectdropped == true)
         {
             UpdateInventoryListText();
@@ -160,7 +161,8 @@ public class SimulContext : MonoBehaviour, ISimulContext
 
     public Boolean Validate()
     {
-        return _s.CheckTasks();
+        StartCoroutine(_s.CheckTasks());
+        return true;
     }
 
     //DO NOT USE (Use the printable attribute instead)

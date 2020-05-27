@@ -67,8 +67,13 @@ class Scene
     private ISimulContext _simulContext;
     public ISimulContext SimulContext { get { return _simulContext; } set { _simulContext = value; }}
     private object _instLock;
+    private bool _isSceneFunctionRunning;
+    public bool IsSceneFunctionRunning { get { return _isSceneFunctionRunning; }}
 
     private Boolean _isUserInput;
+
+    private Dictionary<List<int>,List<Instruction>> _checkbox_inst;
+    private bool _checkbox_isStrict;
 
     public Scene()
     {
@@ -98,22 +103,23 @@ class Scene
     {
         lock(_instLock)
         {
+            _isSceneFunctionRunning = true;
             foreach (Instruction i in _firstTryInst) 
             {
-                Debug.Log("INST");
                 i.Execute(this);
-                //if((_printType & PrintType.WITH_CONFIRMATION) == PrintType.WITH_CONFIRMATION)
                 if(i.Type == Instruction.PRINT_INST)
                 {
-                        Debug.Log("BLAA");
                         yield return new WaitUntil(() => _isUserInput);
                         _isUserInput = false;
-                        Debug.Log("BLAA END");
                 }
                 else if(i.Type == Instruction.LOAD_INST) break;
-                Debug.Log("INST END");
+                else if(i.Type == Instruction.CHECKBOX_INST) 
+                {
+                    yield return new WaitUntil( () => PrintOutput.IsWaitingForAnswer());
+                    yield return new WaitUntil( () => !_checkbox_check_answers(PrintOutput.GetCheckboxAnswers()).MoveNext() );
+                }
             }
-            Debug.Log("LOOP END");
+            _isSceneFunctionRunning = false;
             yield break;
         }
         yield break;
@@ -123,6 +129,7 @@ class Scene
     {
         lock(_instLock)
         {
+            _isSceneFunctionRunning = true;
             foreach (Instruction i in _atStartInst) 
             {
                 i.Execute(this);
@@ -134,6 +141,7 @@ class Scene
                 }
                 else if(i.Type == Instruction.LOAD_INST) break;
             }
+            _isSceneFunctionRunning = false;
         }
         yield break;
     }
@@ -209,15 +217,18 @@ class Scene
         return returnValue;
     }
 
-    public Boolean CheckTasks()
+    public IEnumerator<IEnumerator<WaitUntil>> CheckTasks()
     {
         List<String> obj = new List<String>(_objInventory);
         foreach(Task t in _unorderedTasks)
         {
             if(!t.isTaskDone())
             {
-                fail();
-                return false;
+                //return false;
+                //Debug.Log("Fail");
+                
+                yield return fail();
+                yield break;
             }
             if(t.getType() == Task.TASK_TAKE)
             {
@@ -230,8 +241,8 @@ class Scene
         {
             if(!t.isTaskDone())
             {
-                fail();
-                return false;
+                yield return fail();
+                yield break;
             }
             if(t.getType() == Task.TASK_TAKE)
             {
@@ -244,31 +255,54 @@ class Scene
         {
             if(obj.Count > 0)
             {
-                fail();
-                return false;
+                yield return fail();
+                yield break;
             }
         }
 
-        success();
-        return true;
+        yield return success();
+        yield break;
     }
 
-    private void success()
+    private IEnumerator<WaitUntil> success()
     {
         //_printOutput.PrintToUser("Success !",PrintType.WITH_TIMEOUT,3);
+        _isSceneFunctionRunning = true;
         foreach (Instruction i in _successInst)
         {
             i.Execute(this);
+            if(i.Type == Instruction.PRINT_INST)
+            {
+                    //Debug.Log("BLAA");
+                    yield return new WaitUntil(() => _isUserInput);
+                    _isUserInput = false;
+                    //Debug.Log("BLAA END");
+            }
+            else if(i.Type == Instruction.LOAD_INST) break;
         }
+        _isSceneFunctionRunning = false;
+        yield break;
     }
     
-    private void fail()
+    private IEnumerator<WaitUntil> fail()
     {
+        Debug.Log("Inside Fail");
+        _isSceneFunctionRunning = true;
         //_printOutput.PrintToUser("Fail !",PrintType.WITH_CONFIRMATION);
         foreach (Instruction i in _failInst)
         {
             i.Execute(this);
+            if(i.Type == Instruction.PRINT_INST)
+            {
+                    //Debug.Log("BLAA");
+                    yield return new WaitUntil(() => _isUserInput);
+                    _isUserInput = false;
+                    //Debug.Log("BLAA END");
+            }
+            else if(i.Type == Instruction.LOAD_INST) break;
         }
+        _isSceneFunctionRunning = false;
+        yield break;
     }
 
     public void AddInstructionToSuccess(Instruction i)
@@ -288,14 +322,22 @@ class Scene
 
     public void CheckBox(string message, List<string> options, Dictionary<List<int>,List<Instruction>> inst, bool isStrict = false)
     {
-        List<int> input;
-        input = PrintOutput.CheckboxToUser(message, options);
+        //List<int> input = new List<int>();
+        PrintOutput.CheckboxToUser(message, options);
+        _checkbox_inst = inst;
+        _checkbox_isStrict = isStrict;
+        //yield return new WaitUntil( () => { return PrintOutput.IsWaitingForAnswer(); });
+
+    }
+
+    private IEnumerator<WaitUntil> _checkbox_check_answers(List<int> input)
+    {
         bool goToElse = true;
         List<int> elseKey = null;
 
-        foreach (KeyValuePair<List<int>,List<Instruction>> kv in inst)
+        foreach (KeyValuePair<List<int>,List<Instruction>> kv in _checkbox_inst)
         {
-            if(isStrict)
+            if(_checkbox_isStrict)
             {
                 if(Enumerable.SequenceEqual(input.OrderBy(e => e), kv.Key.OrderBy(e => e)))
                 {
@@ -303,6 +345,17 @@ class Scene
                     foreach (Instruction i in kv.Value)
                     {
                         i.Execute(this);
+                        if(i.Type == Instruction.PRINT_INST)
+                        {
+                                yield return new WaitUntil(() => _isUserInput);
+                                _isUserInput = false;
+                        }
+                        else if(i.Type == Instruction.LOAD_INST) break;
+                        else if(i.Type == Instruction.CHECKBOX_INST) 
+                        {
+                            yield return new WaitUntil( () => PrintOutput.IsWaitingForAnswer());
+                            //yield return _checkbox_check_answers(PrintOutput.GetCheckboxAnswers());
+                        }
                     }
                 }
                 else if(kv.Key.Contains(CheckBoxInstr.DEFAULT_CASE)) elseKey = kv.Key;
@@ -315,6 +368,17 @@ class Scene
                     foreach (Instruction i in kv.Value)
                     {
                         i.Execute(this);
+                        if(i.Type == Instruction.PRINT_INST)
+                        {
+                                yield return new WaitUntil(() => _isUserInput);
+                                _isUserInput = false;
+                        }
+                        else if(i.Type == Instruction.LOAD_INST) break;
+                        else if(i.Type == Instruction.CHECKBOX_INST) 
+                        {
+                            yield return new WaitUntil( () => PrintOutput.IsWaitingForAnswer());
+                            //yield return _checkbox_check_answers(PrintOutput.GetCheckboxAnswers());
+                        }
                     }
                 }
                 else if(kv.Key.Contains(CheckBoxInstr.DEFAULT_CASE)) elseKey = kv.Key;
@@ -323,13 +387,23 @@ class Scene
 
         if(goToElse && elseKey != null)
         {
-            foreach(Instruction i in inst[elseKey])
+            foreach(Instruction i in _checkbox_inst[elseKey])
             {
                 i.Execute(this);
+                if(i.Type == Instruction.PRINT_INST)
+                {
+                        yield return new WaitUntil(() => _isUserInput);
+                        _isUserInput = false;
+                }
+                else if(i.Type == Instruction.LOAD_INST) break;
+                else if(i.Type == Instruction.CHECKBOX_INST) 
+                {
+                    yield return new WaitUntil( () => PrintOutput.IsWaitingForAnswer());
+                    //yield return _checkbox_check_answers(PrintOutput.GetCheckboxAnswers());
+                }
             }
         }
     }
-
     public void SetUserFreeze(bool isFrozen)
     {
         SimulContext.SetUserFreeze(isFrozen);

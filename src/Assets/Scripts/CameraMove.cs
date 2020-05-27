@@ -33,4 +33,15 @@ public class CameraMove : MonoBehaviour
             transform.LookAt(v, Vector3.up);
         }
     }
+
+    public Camera GetCamera()
+    {
+        return GetComponent<Camera>().GetComponent<Camera>();
+    }
+
+    public Vector3 GetCameraPosition()
+    {
+        Camera mycam = GetComponent<Camera>().GetComponent<Camera>();
+        return mycam.ScreenToViewportPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, mycam.nearClipPlane));
+    }
 }

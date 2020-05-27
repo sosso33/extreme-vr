@@ -1,9 +1,9 @@
 #test commentaire
 define:
-    $tshirt = Shirt
+    $tshirt = T-shirt
     $tenueCirculation = Combinaison
     $chaussettes = Chaussettes
-    $chaussuresTravail = Sole
+    $chaussuresTravail = Chaussures
     $dosimetreActif = DosiMActif
     $dosimetrePassif = DosiMPassif
 

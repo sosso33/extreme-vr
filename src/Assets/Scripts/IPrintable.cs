@@ -6,6 +6,8 @@ public interface IPrintable
 {
     void PrintToUser(string text, int type, double time = -1);
     List<int> CheckboxToUser(string message,List<string> choices);
+    bool IsWaitingForAnswer();
+    List<int> GetCheckboxAnswers();
 }
 
 public static class PrintType
